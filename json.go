@@ -2,7 +2,7 @@ package main
 
 //Metrics ...
 type Metrics struct {
-	ServiceName string `json:"ServiceName"`
-	MetricName  string `json:"MetricName"`
-	MetricValue int    `json:"MetricValue"`
+	MetricName  string  `json:"MetricName"`
+	MetricValue float64 `json:"MetricValue"`
+	ServiceName string  `json:"ServiceName"`
 }

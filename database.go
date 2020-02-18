@@ -1,26 +1,28 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+
+	_ "github.com/lib/pq"
+	//_ "github.com/go-sql-driver/mysql"
 )
 
 //DBmetric - stuct for working with metrics in database
 type DBmetric struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 func newDBmetric() *DBmetric {
 
-	s := fmt.Sprintf("%v:%v@/%v", os.Getenv("MYSQL_USER"), os.Getenv("MYSQL_PASS"), os.Getenv("MYSQL_DB"))
+	s := fmt.Sprintf("%v:%v@/%v", os.Getenv("PG_USER"), os.Getenv("PG_PASS"), os.Getenv("PG_DB"))
 
-	database, err := sql.Open("mysql", s)
+	database, err := sqlx.Open("postgress", s)
 
 	if err != nil {
 		log.Println(err)
