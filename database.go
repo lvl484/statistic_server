@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -32,46 +33,23 @@ func newDBmetric() *DBmetric {
 
 //MetricsCreate record metris from endpoints end record it to db
 func (database *DBmetric) MetricsCreate(w http.ResponseWriter, r *http.Request) {
-	//var metrics Metrics
+	var metrics Metrics
 
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintf(w, "InvalidMethod")
+	err := json.NewDecoder(r.Body).Decode(&metrics)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	r.ParseForm()
-
-	//
-	log.Println(r.Form)
-
-	for key, values := range r.Form {
-		for _, value := range values {
-			fmt.Println(key, value)
-		}
-	}
-	//
-
-	/* fmt.Fprintf(w, r.Form.Get("name"))
+	_, err = database.db.Exec(
+		"INSERT INTO metrics(ServiceName,MetricName,MetricValue) VALUES(?,?,?)",
+		metrics.ServiceName, metrics.MetricName, metrics.MetricValue)
+	if err != nil {
+		log.Println(err)
+		return
 	}
 
-		err := json.NewDecoder(r.Body).Decode(&metrics)
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	w.WriteHeader(http.StatusOK)
 
-	// Exec executes a query without returning any rows.
-	// The args are for any placeholder parameters  in the query.
-		_, err = database.db.Exec(
-			"INSERT INTO users(ServiceName,MetricName,MetricValue) VALUES(?,?,?,?)",
-	        metrics.ServiceName, metrics.MetricName, metrics.MetricValue)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-	*/
 }

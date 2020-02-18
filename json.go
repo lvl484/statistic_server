@@ -1,8 +1,8 @@
 package main
 
-//Metrics - my form for saving metrics
+//Metrics ...
 type Metrics struct {
-	ServiceName int `json:"ServiceName"`
-	MetricName  int `json:"MetricName"`
-	MetricValue int `json:"MetricValue"`
+	ServiceName string `json:"ServiceName"`
+	MetricName  string `json:"MetricName"`
+	MetricValue int    `json:"MetricValue"`
 }

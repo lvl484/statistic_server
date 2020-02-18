@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	address := flag.String("address", ":80", "address of server")
+	address := flag.String("address", ":445", "address of server")
 	flag.Parse()
 
 	dbHandling := newDBmetric()
@@ -19,8 +19,7 @@ func main() {
 	router.Use(Middleware)
 
 	api := router.PathPrefix("/api/v1").Subrouter()
-	//	api.HandleFunc("/{metric}", dbHandling.MetricsCreate).Methods(http.MethodGet)
-	api.HandleFunc("/", dbHandling.MetricsCreate).Methods(http.MethodGet)
+	api.HandleFunc("/{ServiceName}", dbHandling.MetricsCreate).Methods(http.MethodGet)
 
 	if err := http.ListenAndServe(*address, router); err != nil {
 		log.Fatal(err.Error())
