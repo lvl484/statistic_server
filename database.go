@@ -50,17 +50,20 @@ func (database *DBmetric) MetricsCreate(w http.ResponseWriter, r *http.Request) 
 	a := vars["ServiceName"]
 
 	err := json.NewDecoder(r.Body).Decode(&metrics)
-	fmt.Println(a, metrics.MetricValue, metrics.MetricName)
+
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	_, err = database.db.Exec(
-		"INSERT INTO metrics(servicename,metricvalue,metricname) VALUES(?,?,?)",
-		a, metrics.MetricValue, metrics.MetricName)
+	sqlStatement := `
+	INSERT INTO metrics(servicename,metricvalue,metricname) 
+	VALUES($1,$2,$3) `
+	_, err = database.db.Exec(sqlStatement, a, metrics.MetricValue, metrics.MetricName)
 
 	if err != nil {
+		//fmt.Println(a, metrics.MetricValue, metrics.MetricName)
+		fmt.Println("bad")
 		log.Println(err)
 		return
 	}
