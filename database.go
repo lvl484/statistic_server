@@ -7,21 +7,31 @@ import (
 	"net/http"
 	"os"
 
+	"database/sql"
+
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
 //DBmetric - stuct for working with metrics in database
 type DBmetric struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 func newDBmetric() *DBmetric {
 
-	s := fmt.Sprintf("%v:%v@/%v", os.Getenv("PG_USER"), os.Getenv("PG_PASS"), os.Getenv("PG_DB"))
+	s := fmt.Sprintf("host=localhost port=5432 user=%v password=%v dbname=%v sslmode=disable", os.Getenv("PG_USER"), os.Getenv("PG_PASS"), os.Getenv("PG_DB"))
 
-	database, err := sqlx.Open("postgres", s)
+	//s := fmt.Sprintf("%v:%v@/%v", os.Getenv("PG_USER"), os.Getenv("PG_PASS"), os.Getenv("PG_DB"))
+
+	database, err := sql.Open("postgres", s)
+	defer database.Close()
+
+	err = database.Ping()
+	if err != nil {
+		log.Println(err)
+	}
 
 	if err != nil {
 		log.Println(err)
@@ -36,16 +46,20 @@ func newDBmetric() *DBmetric {
 func (database *DBmetric) MetricsCreate(w http.ResponseWriter, r *http.Request) {
 	var metrics Metrics
 
-	err := json.NewDecoder(r.Body).Decode(&metrics)
+	vars := mux.Vars(r)
+	a := vars["ServiceName"]
 
+	err := json.NewDecoder(r.Body).Decode(&metrics)
+	fmt.Println(a, metrics.MetricValue, metrics.MetricName)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	_, err = database.db.Exec(
-		"INSERT INTO metrics(ServiceName,MetricValue,MetricName) VALUES(?,?,?)",
-		metrics.ServiceName, metrics.MetricValue, metrics.MetricName)
+		"INSERT INTO metrics(servicename,metricvalue,metricname) VALUES(?,?,?)",
+		a, metrics.MetricValue, metrics.MetricName)
+
 	if err != nil {
 		log.Println(err)
 		return
