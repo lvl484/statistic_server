@@ -51,23 +51,22 @@ func newDBmetric() *DBmetric {
 func (database *DBmetric) MetricsCreate(w http.ResponseWriter, r *http.Request) {
 
 	var metrics Metrics
-	var Status string
+	var Status int
 
 	err := json.NewDecoder(r.Body).Decode(&metrics)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-
+		database.BadRequestHandler(w, r)
 		return
 	}
-
-	Status = "Successful"
 
 	vars := mux.Vars(r)
 	metrics.ServiceName = vars[serviceName]
 
 	time := time.Now()
 
+	Status = http.StatusOK
 	sqlStatement := `
 	INSERT INTO metrics(servicename,metricvalue,metricname,status,time)
 	VALUES($1,$2,$3,$4,$5) `
@@ -81,6 +80,30 @@ func (database *DBmetric) MetricsCreate(w http.ResponseWriter, r *http.Request) 
 
 	w.WriteHeader(http.StatusOK)
 
+}
+
+//BadRequestHandler record failed requests
+func (database *DBmetric) BadRequestHandler(w http.ResponseWriter, r *http.Request) {
+
+	var Status int
+
+	vars := mux.Vars(r)
+	ServiceName := vars[serviceName]
+
+	time := time.Now()
+
+	Status = http.StatusBadRequest
+
+	sqlStatement := `
+	INSERT INTO metrics(servicename,metricvalue,metricname,status,time)
+	VALUES($1,$2,$3,$4,$5) `
+
+	_, err := database.db.Exec(sqlStatement, ServiceName, 0, 0, Status, time)
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
 
 //GetMetricsForService gets all metrics for the collection unit
