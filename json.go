@@ -8,5 +8,5 @@ type Metrics struct {
 	MetricValue float64    `json:"MetricValue"`
 	MetricName  string     `json:"MetricName"`
 	Time        *time.Time `json:"Time"`
-	Status      string     `json:"Status"`
+	Status      int        `json:"Status"`
 }
